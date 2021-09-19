@@ -1,0 +1,7 @@
+Hi I'm Rubin Antony James. I have 3 years of experience as a Business Analyst and have worked across technologies like SQL and Shell.
+I also have worked on a few server side technologies such as Weblogic and Jboss.
+I am very passionate about soccer and have played at numerous levels in my school, college and professional life. I also love to travel, especially hill stations and hiking spots.
+One can always reach out to me on my email id : antony.rubin95@gmail.com.
+
+I have previously worked with Version control system, but it was integrated with the IDE, hence, the usage of commands from terminal were minimal.
+The concepts are relatable and hence easy to understand. Just need to brush up on the commands. 
