@@ -4,4 +4,4 @@ I am very passionate about soccer and have played at numerous levels in my schoo
 One can always reach out to me on my email id : antony.rubin95@gmail.com.
 
 I have previously worked with Version control system, but it was integrated with the IDE, hence, the usage of commands from terminal were minimal.
-The concepts are relatable and hence easy to understand. Just need to brush up on the commands. 
+The concepts are relatable and hence easy to understand. Just need to brush up on the commands.  
