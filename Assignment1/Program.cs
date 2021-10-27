@@ -3,73 +3,141 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualBasic.FileIO;
+using log4net;
+using log4net.Config;
+using System.Reflection;
 
 namespace Assignment1
 {
     class DirWalker
     {
-        //List<string> fields = new List<string>();
+        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         string[] field;
+        int invalid_rowcount = 0;
+        int valid_rowcount = 0;
+        String oppath = @"../../../Output/opfile.csv";
+        
         static void Main(string[] args)
         {
             DirWalker p = new DirWalker();
-            string path1 = @"C:\MScCDA\5510\2_GIT_Class_Assignment\A00455851_MCDA5510\MCDA5510_Assignments\Sample Data\2019\1\1";
-            //string fullpath = Path.GetFullPath(path1);
-            Console.WriteLine("Hello World!" + path1);
-            p.parseDir(path1);
+            string input_path = @"C:\MScCDA\5510\2_GIT_Class_Assignment\A00455851_MCDA5510\MCDA5510_Assignments\Sample Data";
+            
+
+            if (!File.Exists(p.oppath))
+            {
+                using (StreamWriter sw = File.CreateText(p.oppath)) ;
+            }
+            using (StreamWriter ow = File.AppendText(p.oppath))
+            {
+                ow.WriteLine("First Name, Last Name, Street Number, Street, City, Province, Country, Postal Code, Phone Number, Email Address, Date");
+            }
+            DateTime exec_start = DateTime.Now;
+            p.parseDir(input_path);
+            DateTime exec_end = DateTime.Now;
+            log.Info("Total time elapsed : " + exec_end.Subtract(exec_start).TotalSeconds + " seconds");
 
             Console.ReadLine();
         }
 
         public void parseDir(String path)
         {
-            //Console.WriteLine("Inside Func");
             String[] dirList = Directory.GetDirectories(path);
 
-            if (dirList == null)
-                return;
-
-            foreach (string dirpath in dirList)
+            try
             {
-                if (Directory.Exists(dirpath))
+                if (dirList == null)
+                    return;
+
+                foreach (string dirpath in dirList)
                 {
-                    
-                    //Console.WriteLine("\n");
-                    parseDir(dirpath);
-                    //Console.WriteLine("\nDir:" + dirpath);
-                                        
+                    if (Directory.Exists(dirpath))
+                    {
+
+                        parseDir(dirpath);
+
+                    }
+
+
                 }
 
-                
-            }
-
-            String[] fileList = Directory.GetFiles(path);
-            foreach(String file in fileList)
-            {
-                string fileExt =  System.IO.Path.GetExtension(file);
-                if (fileExt == ".csv")
+                String[] fileList = Directory.GetFiles(path);
+                foreach (String file in fileList)
                 {
-                    //Console.WriteLine("\nFile :" + file);
-                   
-                    csvRead(file);
-                 }
+                    string fileExt = System.IO.Path.GetExtension(file);
+                    if (fileExt == ".csv")
+                    {
 
+                        csvRead(file);
+                    }
+
+                }
             }
-             
-                
-           
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine("The file or directory cannot be found.");
+            }
+            catch (DirectoryNotFoundException)
+            {
+                Console.WriteLine("The file or directory cannot be found.");
+            }
+            catch (DriveNotFoundException)
+            {
+                Console.WriteLine("The drive specified in 'path' is invalid.");
+            }
+            catch (PathTooLongException)
+            {
+                Console.WriteLine("'path' exceeds the maxium supported path length.");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Console.WriteLine("You do not have permission to create this file.");
+            }
+            catch (IOException e) when ((e.HResult & 0x0000FFFF) == 32)
+            {
+                Console.WriteLine("There is a sharing violation.");
+            }
+            catch (IOException e) when ((e.HResult & 0x0000FFFF) == 80)
+            {
+                Console.WriteLine("The file already exists.");
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine($"An exception occurred:\nError code: " +
+                                  $"{e.HResult & 0x0000FFFF}\nMessage: {e.Message}");
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine("Exception Encountered : "+ e.Message);
+            }
+
+
+
+
 
         }
         public void csvRead(String filename)
         {
+            string day="", month="", year="";
             Console.WriteLine("Filepath" + filename);
             String[] split_filepath = filename.Split('\\');
-            string day = split_filepath[9];
-            string month = split_filepath[8];
-            string year = split_filepath[7];
-            //Console.WriteLine("Date : " + day + "/" + month + "/" + year);
+            if (Int32.Parse(split_filepath[9]) < 10)
+            {
+                day = "0" + split_filepath[9];
+            }
+            else
+                day = split_filepath[9];
+            if (Int32.Parse(split_filepath[8]) < 10)
+            {
+                month = "0" + split_filepath[8];
+            }
+            else
+                month = split_filepath[8];
+
+             year = split_filepath[7];
+             string datecol = day + "/" + month + "/" + year;
+
             
-                
+            
             try
             {
                 using (TextFieldParser parser = new TextFieldParser(filename))
@@ -77,118 +145,67 @@ namespace Assignment1
                     parser.TextFieldType = FieldType.Delimited;
                     parser.SetDelimiters(",");
                     int row = 0;
-                    
-                    int invalid_rowcount = 0;
-                    int valid_rowcount = 0;
-
-                    String logpath = @"C:\Users\Rubin James\source\repos\A00455851_MCDA5510\Assignment1\Logfile.log";
-                    String oppath = @"C:\Users\Rubin James\source\repos\A00455851_MCDA5510\Assignment1\opfile.txt";
-                    if (!File.Exists(logpath))
-                    {
-                        using (StreamWriter sw = File.CreateText(logpath)) ;
-                    }
-                    if (!File.Exists(oppath))
-                    {
-                        using (StreamWriter sw = File.CreateText(oppath)) ;
-                    }
+                                       
+                                        
+                    var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
+                    XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
 
                     DateTime start_time = DateTime.Now;
-                    using (StreamWriter lw = File.AppendText(logpath))
-                    {
-                        lw.WriteLine("Starting processing of " + filename + " at time " + start_time);
-                    }
+                    
+                    log.Info("Starting processing of " + filename);
                     while (!parser.EndOfData)
                     {
                         List<string> final_row = new List<string>();
                         ++row;
                         field = parser.ReadFields();
-                       
-                                       
 
-                        for (int i = 0; i < 10; i++)
+                                              
+                        foreach (string elem in field)
                         {
-                            if (field[i] == "First Name")
+                            if (elem == "First Name")
                             {
                                 --row;
                                 break;
                             }
-                            else if (field[i] == "")
+                            else if (elem == "" || elem == null)
                             {
                                 final_row = new List<string>();
-                                //row++;
                                 invalid_rowcount++;
 
 
-                                using (StreamWriter lw = File.AppendText(logpath))
                                 {
-                                    lw.WriteLine("Row " + row + " of " + split_filepath[10] + " is invalid as null values are present");
-                                    //++row;
+                                    
+                                    log.Error("Row " + row + " of " + split_filepath[10] + " is invalid as null values are present");
                                     break;
                                 }
 
                             }
                             else
                             {
-                                //row++;
-                                final_row.Add(field[i]);
+                                final_row.Add(elem);
                                 
                             }
                             
 
                         }
-                        //string[] check = final_row.ToArray();
                         if (!(final_row?.Any() != true))
                         {
                             using (StreamWriter ow = File.AppendText(oppath))
                             {
-                                ow.WriteLine(string.Join(", ", final_row));
+                                ow.WriteLine(string.Join(", ", final_row) + ", "+datecol );
                             }
                             valid_rowcount++;
                         }
 
 
-
                     }
                     DateTime end_time = DateTime.Now;
 
-                    using (StreamWriter lw = File.AppendText(logpath))
-                    {
-                        lw.WriteLine("Ending processing of " + filename + " at time " + end_time);
-                        lw.WriteLine("Total Time Taken :" + (end_time.Subtract(start_time).TotalMilliseconds+" Milliseconds"));
-                        //++row;
-
-                    }
-                    /*for (int i = 0; i < fields.Count ;)
-                    {
-                        Console.WriteLine("Rec:{0} ",string.Join(", ",fields[i]));
-                        i = i + 10;
-                    }*/
-
-                    /*for(int i=0; i < 27; i++)
-                    {
-                        Console.WriteLine("Fields:" + fields[i]);
-                    }*/
-
-                    //Console.WriteLine("FieldCount" + fields.Count);
-                    //string[] fieldlist = fields.ToArray();
-                    //Console.WriteLine("First Row " + fieldlist[0]);
-                    //Console.WriteLine("Count" + fields.Count);
-
-                    /*for (int i = 0; i < (fields.Count) / 10;)
-                    {
-                        
-                        for(int j=i;j<10;j++)
-                        {
-                            Console.Write("Records are:{0}", string.Join(", ", fields[j]));
-                            Console.Write("\n");
-                            i                           
-                        }
-                        
-
-                    }*/
-
-
-
+                    
+                    log.Info("Ending processing of " + filename);
+                    log.Info("Total Time Taken :" + (end_time.Subtract(start_time).TotalMilliseconds + " Milliseconds"));
+                    
+                    
                 }
 
             }
@@ -197,6 +214,14 @@ namespace Assignment1
             {
                 Console.WriteLine(ioe.StackTrace);
             }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception Encountered : " + e.Message);
+            }
+            
+            log.Info("Total no of records parsed :" + (valid_rowcount+invalid_rowcount));
+            log.Info("Total no of valid records :" + valid_rowcount);
+            log.Info("Tota no of invalid records :" + invalid_rowcount);
         }
 
     }
