@@ -36,7 +36,6 @@ namespace Assignment1
             DateTime exec_end = DateTime.Now;
             log.Info("Total time elapsed : " + exec_end.Subtract(exec_start).TotalSeconds + " seconds");
 
-            Console.ReadLine();
         }
 
         public void parseDir(String path)
@@ -118,7 +117,7 @@ namespace Assignment1
         public void csvRead(String filename)
         {
             string day="", month="", year="";
-            Console.WriteLine("Filepath" + filename);
+            //Console.WriteLine("Filepath" + filename);
             String[] split_filepath = filename.Split('\\');
             int size = split_filepath.Length;
             if (Int32.Parse(split_filepath[size-2]) < 10)
@@ -217,7 +216,7 @@ namespace Assignment1
             }
             catch (Exception e)
             {
-                Console.WriteLine("Exception Encountered : " + e.Message);
+                Console.WriteLine("Exception Encountered : " + e.StackTrace);
             }
             
             log.Info("Total no of records parsed :" + (valid_rowcount+invalid_rowcount));
