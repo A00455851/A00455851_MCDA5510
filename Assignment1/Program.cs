@@ -107,7 +107,7 @@ namespace Assignment1
             }
             catch(Exception e)
             {
-                Console.WriteLine("Exception Encountered : "+ e.Message);
+                Console.WriteLine("Exception Encountered : "+ e.StackTrace);
             }
 
 
@@ -120,20 +120,21 @@ namespace Assignment1
             string day="", month="", year="";
             Console.WriteLine("Filepath" + filename);
             String[] split_filepath = filename.Split('\\');
-            if (Int32.Parse(split_filepath[9]) < 10)
+            int size = split_filepath.Length;
+            if (Int32.Parse(split_filepath[size-2]) < 10)
             {
-                day = "0" + split_filepath[9];
+                day = "0" + split_filepath[size-2];
             }
             else
                 day = split_filepath[9];
-            if (Int32.Parse(split_filepath[8]) < 10)
+            if (Int32.Parse(split_filepath[size-3]) < 10)
             {
-                month = "0" + split_filepath[8];
+                month = "0" + split_filepath[size-3];
             }
             else
-                month = split_filepath[8];
+                month = split_filepath[size-3];
 
-             year = split_filepath[7];
+             year = split_filepath[size-4];
              string datecol = day + "/" + month + "/" + year;
 
             
